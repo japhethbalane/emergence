@@ -6,13 +6,10 @@ canvas.width = window.innerWidth;
 
 setInterval(world, 30);
 
+var character = new Character();
+var score = 0;
 var points = [];
-var inteval = 40;
-var a = canvas.width/2;
-var b = canvas.height/2;
-var da = randomBetween(-2,2);
-var db = randomBetween(-1,1);
-var rad = 150;
+var inteval = 20;
 
 generatePoints();
 
@@ -32,42 +29,26 @@ function clearCanvas() {
 	context.fillStyle = "#001634";
 	context.fillRect(0,0,canvas.width,canvas.height);
 }
-function updateWorld() {
-	a += da;
-	b += db;
-	if (a-rad < 0) {
-		da *= -1;
-	};
-	if (a+rad > canvas.width) {
-		da *= -1;
-	};
-	if (b-rad < 0) {
-		db *= -1;
-	};
-	if (b+rad > canvas.height) {
-		db*=-1;
-	};
-}
 
 function world() {
 	clearCanvas();
 	for (var i = 0; i < points.length; i++) {
 		points[i].update().draw();
 	}
-	updateWorld();
+	character.update();
 }
 
 function Point(x,y) {
 	this.x = x;
 	this.y = y;
-	this.radius = 1;
 
 	this.update = function() {
 		this.radius = 1;
-		if (Math.sqrt( Math.abs(this.x-a)*Math.abs(this.x-a) + 
-			Math.abs(this.y-b)*Math.abs(this.y-b)) < rad) {
-			this.radius = rad - Math.sqrt( Math.abs(this.x-a)*Math.abs(this.x-a) + 
-				Math.abs(this.y-b)*Math.abs(this.y-b));
+		if (Math.sqrt( Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
+			Math.abs(this.y-character.y)*Math.abs(this.y-character.y)) < character.rad) {
+			this.radius = character.rad - Math.sqrt( 
+				Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
+				Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
 		};
 
 		return this;
@@ -75,9 +56,21 @@ function Point(x,y) {
 
 	this.draw = function() {
 		context.beginPath();
-		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
+		context.arc(this.x, this.y, 1, Math.PI*2, false);
 		context.fillStyle = "rgba(255,255,255,0.15)";
 		context.fill();
+
+		return this;
+	}
+}
+
+function Character() {
+	this.x = canvas.width/2;
+	this.y = canvas.height/2;
+	this.rad = 75;
+
+	this.update = function() {
+
 
 		return this;
 	}
