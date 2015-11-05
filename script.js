@@ -9,31 +9,41 @@ setInterval(world, 30);
 var character = new Character();
 var score = 0;
 var points = [];
-var inteval = 20;
+var intervalx = canvas.width/75;
+var intervaly = intervalx;
 var start = false;
 var xTest = 0;
+var gameSpeed = 5;
 
 generatePoints();
 
 var mousePress = function(event) {
-    character.jump = true;
-    start = true;
-    if (event.pageX < character.x) {
-    	xTest = randomBetween(1,5);
+	if (!start && character.y == canvas.height/2 && character.x == canvas.width/3) {
+    	start = true;
     };
-    if (event.pageX > character.x) {
-    	xTest = randomBetween(-5,-1);
+    if (!start && character.y != canvas.height/2 && character.x != canvas.width/3) {
+    	character.x = canvas.width/3;
+    	character.y = canvas.height/2;
     };
-    if (event.pageX == character.x) {
-    	xTest = 0;
+    if (start) {
+	    character.jump = true;
+	    if (event.pageX < character.x) {
+	    	xTest = randomBetween(1,5);
+	    };
+	    if (event.pageX > character.x) {
+	    	xTest = randomBetween(-5,-1);
+	    };
+	    if (event.pageX == character.x) {
+	    	xTest = 0;
+	    };
+	    score++;
     };
-    score++;
 }
 canvas.addEventListener("click", mousePress);
 
 function generatePoints() {
-	for (var i = 5; i < canvas.height; i += inteval) {
-		for (var j = 5; j < canvas.width; j+= inteval) {
+	for (var i = 5; i < canvas.height; i += intervaly) {
+		for (var j = 5; j < canvas.width; j+= intervalx) {
 			points.push(new Point(j,i));
 		}
 	}
@@ -53,13 +63,12 @@ function world() {
 	if (start) {
 		character.update();
 	};
+	if (!start) {
+
+	};
 	for (var i = 0; i < points.length; i++) {
 		points[i].update().draw();
 	}
-	// if (score > 0) {
-	// 	points[score-1].radius = 3;
-	// };
-	console.log(score);
 }
 
 function Point(x,y) {
@@ -74,6 +83,12 @@ function Point(x,y) {
 			this.radius = character.rad - Math.sqrt( 
 				Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
 				Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
+		};
+		if (!start && character.y == canvas.height/2 && character.x == canvas.width/3 || start) {
+			this.x-=gameSpeed;
+   		};
+		if (this.x <= 0) {
+			this.x = canvas.width;
 		};
 
 		return this;
@@ -90,7 +105,7 @@ function Point(x,y) {
 }
 
 function Character() {
-	this.x = canvas.width/2;
+	this.x = canvas.width/3;
 	this.y = canvas.height/2;
 	this.rad = 75;
 	this.jump = false;
@@ -122,6 +137,10 @@ function Character() {
 				this.speed += this.spd / 10;
 			};
 			this.jump = false;
+		};
+		if (this.y+this.rad >= canvas.height || this.y-this.rad <= 0 || 
+			this.x+this.rad >= canvas.width || this.x-this.rad <= 0) {
+			start = false;
 		};
 	}
 }
