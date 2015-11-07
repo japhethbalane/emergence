@@ -21,25 +21,36 @@ var mousePress = function(event) {
 	if (!start && character.y == canvas.height/2 && character.x == canvas.width/3) {
     	start = true;
     };
-    if (!start && character.y != canvas.height/2 && character.x != canvas.width/3) {
+    if (!start && ( character.y != canvas.height/2 || character.x != canvas.width/3)) {
     	character.x = canvas.width/3;
     	character.y = canvas.height/2;
     };
     if (start) {
 	    character.jump = true;
-	    if (event.pageX < character.x) {
-	    	xTest = randomBetween(1,5);
+	    xTest = 0;
+	    if (event.pageX > character.x + character.rad) {
+	    	xTest = randomBetween(1,10);
 	    };
-	    if (event.pageX > character.x) {
-	    	xTest = randomBetween(-5,-1);
-	    };
-	    if (event.pageX == character.x) {
-	    	xTest = 0;
+	    if (event.pageX < character.x - character.rad) {
+	    	xTest = randomBetween(-10,-1);
 	    };
 	    score++;
     };
 }
 canvas.addEventListener("click", mousePress);
+
+// window.addEventListener("keypress", function(e) {
+// 	if (!start && character.y == canvas.height/2 && character.x == canvas.width/3) {
+//     	start = true;
+//     };
+//     if (!start && (character.y != canvas.height/2 || character.x != canvas.width/3)) {
+//     	character.x = canvas.width/3;
+//     	character.y = canvas.height/2;
+//     };
+// 	if (start && e.keyCode == 32) {
+// 		character.jump = true;
+// 	};
+// });
 
 function generatePoints() {
 	for (var i = 5; i < canvas.height; i += intervaly) {
@@ -84,7 +95,8 @@ function Point(x,y) {
 				Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
 				Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
 		};
-		if (!start && character.y == canvas.height/2 && character.x == canvas.width/3 || start) {
+		// if (!start && character.y == canvas.height/2 && character.x == canvas.width/3 || start) {
+		if (start) {
 			this.x-=gameSpeed;
    		};
 		if (this.x <= 0) {
@@ -109,7 +121,7 @@ function Character() {
 	this.y = canvas.height/2;
 	this.rad = 75;
 	this.jump = false;
-	this.speed = 30;
+	this.speed = 50;
 	this.spd = this.speed;
 	this.acceleration = 1.01;
 
@@ -129,7 +141,7 @@ function Character() {
 					this.speed = -this.spd;
 				};
 			};
-			if (this.speed > -0.3 && this.speed < 0) {
+			if (this.speed > -0.5 && this.speed < 0) {
 				this.speed = 0;
 				this.acceleration = 1.01;
 			};
