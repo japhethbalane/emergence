@@ -7,13 +7,13 @@ canvas.width = window.innerWidth;
 setInterval(world, 30);
 
 var character = new Character();
+var obstacle = new Obstacle();
 var score = 0;
 var points = [];
 var intervalx = canvas.width/75;
 var intervaly = intervalx;
 var start = false;
 var xTest = 0;
-var gameSpeed = 5;
 
 generatePoints();
 
@@ -29,10 +29,10 @@ var mousePress = function(event) {
 	    character.jump = true;
 	    xTest = 0;
 	    if (event.pageX > character.x + character.rad) {
-	    	xTest = randomBetween(1,10);
+	    	xTest = 5;
 	    };
 	    if (event.pageX < character.x - character.rad) {
-	    	xTest = randomBetween(-10,-1);
+	    	xTest = -5;
 	    };
 	    score++;
     };
@@ -60,7 +60,8 @@ function world() {
 	clearCanvas();
 	if (start) {
 		character.update();
-	};
+		obstacle.update().draw();
+	}
 	if (!start) {
 
 	};
@@ -82,9 +83,8 @@ function Point(x,y) {
 				Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
 				Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
 		};
-		// if (!start && character.y == canvas.height/2 && character.x == canvas.width/3 || start) {
 		if (start) {
-			this.x-=gameSpeed;
+			this.x-=10;
    		};
 		if (this.x <= 0) {
 			this.x = canvas.width;
@@ -108,16 +108,15 @@ function Character() {
 	this.y = canvas.height/2;
 	this.rad = 75;
 	this.jump = false;
-	this.speed = 20;
+	this.speed = 40;
 	this.spd = this.speed;
 	this.acceleration = 1.01;
 
 	this.update = function() {
-		if (this.y+this.rad < canvas.height && this.y-this.rad > 0 && 
-			this.x+this.rad < canvas.width && this.x-this.rad > 0) {
+		if (this.x+this.rad < canvas.width && this.x-this.rad > 0) {
 			this.speed *= this.acceleration;
 			this.y += this.speed;
-			this.x += xTest;
+			// this.x += xTest;
 
 			if (this.jump) {
 				if (this.speed > 0) {
@@ -137,13 +136,49 @@ function Character() {
 			};
 			this.jump = false;
 		};
-		if (this.y+this.rad >= canvas.height || this.y-this.rad <= 0 || 
-			this.x+this.rad >= canvas.width || this.x-this.rad <= 0) {
+		if (this.y - this.rad < obstacle.l1y1) {
+			this.y = obstacle.l1y1 + this.rad;
+		};
+		if (this.y + this.rad > obstacle.l2y1) {
+			this.y = obstacle.l2y1 - this.rad;
+		};
+		if (this.x+this.rad >= canvas.width || this.x-this.rad <= 0) {
 			start = false;
 		};
 	}
 }
 
 function Obstacle() {
+	this.l1x1 = 0;
+	this.l1x2 = canvas.width;
+	this.l1y1 = 50;
+	this.l1y2 = this.l1y1;
 	
+	this.l2x1 = 0;
+	this.l2x2 = canvas.width;
+	this.l2y1 = canvas.height - 50;
+	this.l2y2 = this.l2y1;
+
+	this.update = function() {
+		
+
+		return this;
+	}
+
+	this.draw = function() {
+		context.beginPath();
+		context.moveTo(this.l1x1, this.l1y1);
+
+		context.lineTo(this.l1x2, this.l1y2);
+		context.strokeStyle = "rgba(255,255,255,0.5)";
+		context.stroke();
+
+		context.moveTo(this.l2x1, this.l2y1);
+
+		context.lineTo(this.l2x2, this.l2y2);
+		context.strokeStyle = "rgba(255,255,255,0.5)";
+		context.stroke();
+
+		return this;
+	}
 }
