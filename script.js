@@ -151,21 +151,29 @@ function Obstacle() {
 	this.l2y1 = canvas.height - 50;
 	this.l2y2 = this.l2y1;
 
+	this.distort = randomBetween(50,150);
+	this.dx = canvas.width;
+
 	this.update = function() {
-		
+		this.dx-=10;
 
 		return this;
 	}
 
 	this.draw = function() {
 		context.beginPath();
-		context.moveTo(this.l1x1, this.l1y1);
 
-		context.lineTo(this.l1x2, this.l1y2);
-		context.strokeStyle = "rgba(255,255,255,0.5)";
-		context.stroke();
+		// context.moveTo(this.l1x1, this.l1y1);
+		// context.lineTo(this.l1x2, this.l1y2);
+		// context.strokeStyle = "rgba(255,255,255,0.5)";
+		// context.stroke();
 
 		context.moveTo(this.l2x1, this.l2y1);
+
+		context.lineTo(this.dx, this.l2y1);
+		context.lineTo(this.dx, this.l2y1 - this.distort);
+		context.lineTo(this.dx + this.distort, this.l2y1 - this.distort);
+		context.lineTo(this.dx + this.distort, this.l2y1);
 
 		context.lineTo(this.l2x2, this.l2y2);
 		context.strokeStyle = "rgba(255,255,255,0.5)";
