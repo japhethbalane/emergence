@@ -13,7 +13,6 @@ var points = [];
 var intervalx = canvas.width/75;
 var intervaly = intervalx;
 var start = false;
-var xTest = 0;
 
 generatePoints();
 
@@ -27,13 +26,6 @@ var mousePress = function(event) {
     };
     if (start) {
 	    character.jump = true;
-	    xTest = 0;
-	    if (event.pageX > character.x + character.rad) {
-	    	xTest = 5;
-	    };
-	    if (event.pageX < character.x - character.rad) {
-	    	xTest = -5;
-	    };
 	    score++;
     };
 }
