@@ -13,6 +13,7 @@ var points = [];
 var intervalx = canvas.width/75;
 var intervaly = intervalx;
 var start = false;
+var gameSpeed = 20;
 
 generatePoints();
 
@@ -32,8 +33,8 @@ var mousePress = function(event) {
 canvas.addEventListener("click", mousePress);
 
 function generatePoints() {
-	for (var i = 5; i < canvas.height; i += intervaly) {
-		for (var j = 5; j < canvas.width; j+= intervalx) {
+	for (var i = 0; i <= canvas.height; i += intervaly) {
+		for (var j = 0; j <= canvas.width; j+= intervalx) {
 			points.push(new Point(j,i));
 		}
 	}
@@ -57,29 +58,32 @@ function world() {
 	if (!start) {
 
 	};
-	for (var i = 0; i < points.length; i++) {
-		points[i].update().draw();
-	}
+	character.draw();
+	console.log(obstacle.dx);
+	// for (var i = 0; i < points.length; i++) {
+	// 	points[i].update().draw();
+	// }
 }
 
 function Point(x,y) {
 	this.x = x;
 	this.y = y;
 	this.radius = 1;
+	this.speed = gameSpeed/2;
 
 	this.update = function() {
 		this.radius = 1;
 		if (Math.sqrt( Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
-					   Math.abs(this.y-character.y)*Math.abs(this.y-character.y)) < character.rad) {
-			this.radius = character.rad - Math.sqrt( 
+					   Math.abs(this.y-character.y)*Math.abs(this.y-character.y)) < character.radius) {
+			this.radius = character.radius - Math.sqrt( 
 				Math.abs(this.x-character.x)*Math.abs(this.x-character.x) + 
 				Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
 		};
 		if (start) {
-			this.x-=10;
+			this.x-=this.speed;
    		};
 		if (this.x <= 0) {
-			this.x = canvas.width;
+			this.x = canvas.width + ( 0 - this.x );
 		};
 
 		return this;
@@ -94,18 +98,17 @@ function Point(x,y) {
 		return this;
 	}
 }
-
 function Character() {
 	this.x = canvas.width/3;
 	this.y = canvas.height/2;
-	this.rad = 75;
+	this.radius = 75;
 	this.jump = false;
 	this.speed = 40;
 	this.spd = this.speed;
 	this.acceleration = 1.01;
 
 	this.update = function() {
-		if (this.x+this.rad < canvas.width && this.x-this.rad > 0) {
+		if (this.x+this.radius < canvas.width && this.x-this.radius > 0) {
 			this.speed *= this.acceleration;
 			this.y += this.speed;
 			// this.x += xTest;
@@ -128,15 +131,38 @@ function Character() {
 			};
 			this.jump = false;
 		};
-		if (this.y - this.rad < obstacle.l1y1) {
-			this.y = obstacle.l1y1 + this.rad;
+		if (this.y - this.radius < obstacle.l1y1) {
+			this.y = obstacle.l1y1 + this.radius;
 		};
-		if (this.y + this.rad > obstacle.l2y1) {
-			this.y = obstacle.l2y1 - this.rad;
+		if (this.y + this.radius > obstacle.l2y1) {
+			this.y = obstacle.l2y1 - this.radius;
 		};
-		if (this.x+this.rad >= canvas.width || this.x-this.rad <= 0) {
+		if (this.x+this.radius >= canvas.width || this.x-this.radius <= 0) {
 			start = false;
 		};
+
+		return this;
+	}
+
+	this.draw = function() {
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius, Math.PI * 2, false);
+		context.strokeStyle = "rgba(255,255,255,0.15)";
+		context.stroke();
+
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius-5, Math.PI * 2, false);
+		context.strokeStyle = "rgba(255,255,255,0.5)";
+		context.stroke();
+
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius-10, Math.PI * 2, false);
+		context.strokeStyle = "rgba(255,255,255,1)";
+		context.fillStyle = "rgba(255,255,255,0.5)";
+		context.stroke();
+		context.fill();
+
+		return this;
 	}
 }
 
@@ -155,7 +181,12 @@ function Obstacle() {
 	this.dx = canvas.width;
 
 	this.update = function() {
-		this.dx-=10;
+		this.dx-=gameSpeed;
+
+		if (this.dx + this.distort < 0) {
+			this.distort = randomBetween(50,150);
+			this.dx = canvas.width;
+		};
 
 		return this;
 	}
@@ -163,10 +194,10 @@ function Obstacle() {
 	this.draw = function() {
 		context.beginPath();
 
-		// context.moveTo(this.l1x1, this.l1y1);
-		// context.lineTo(this.l1x2, this.l1y2);
-		// context.strokeStyle = "rgba(255,255,255,0.5)";
-		// context.stroke();
+		context.moveTo(this.l1x1, this.l1y1);
+		context.lineTo(this.l1x2, this.l1y2);
+		context.strokeStyle = "rgba(255,255,255,0.5)";
+		context.stroke();
 
 		context.moveTo(this.l2x1, this.l2y1);
 
