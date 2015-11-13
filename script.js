@@ -7,7 +7,6 @@ canvas.width = window.innerWidth;
 setInterval(world, 30);
 
 var character = new Character();
-var obstacle = new Obstacle();
 var score = 0;
 var points = [];
 var intervalx = canvas.width/75;
@@ -40,6 +39,10 @@ function generatePoints() {
 	}
 }
 
+function drawLines(){
+
+}
+
 function randomBetween(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -51,15 +54,14 @@ function clearCanvas() {
 
 function world() {
 	clearCanvas();
+	drawLines();
 	if (start) {
 		character.update();
-		obstacle.update().draw();
 	}
 	if (!start) {
 
 	};
 	character.draw();
-	console.log(obstacle.dx);
 	// for (var i = 0; i < points.length; i++) {
 	// 	points[i].update().draw();
 	// }
@@ -111,7 +113,6 @@ function Character() {
 		if (this.x+this.radius < canvas.width && this.x-this.radius > 0) {
 			this.speed *= this.acceleration;
 			this.y += this.speed;
-			// this.x += xTest;
 
 			if (this.jump) {
 				if (this.speed > 0) {
@@ -130,12 +131,6 @@ function Character() {
 				this.speed += this.spd / 20;
 			};
 			this.jump = false;
-		};
-		if (this.y - this.radius < obstacle.l1y1) {
-			this.y = obstacle.l1y1 + this.radius;
-		};
-		if (this.y + this.radius > obstacle.l2y1) {
-			this.y = obstacle.l2y1 - this.radius;
 		};
 		if (this.x+this.radius >= canvas.width || this.x-this.radius <= 0) {
 			start = false;
@@ -167,48 +162,14 @@ function Character() {
 }
 
 function Obstacle() {
-	this.l1x1 = 0;
-	this.l1x2 = canvas.width;
-	this.l1y1 = 50;
-	this.l1y2 = this.l1y1;
 	
-	this.l2x1 = 0;
-	this.l2x2 = canvas.width;
-	this.l2y1 = canvas.height - 50;
-	this.l2y2 = this.l2y1;
-
-	this.distort = randomBetween(50,150);
-	this.dx = canvas.width;
 
 	this.update = function() {
-		this.dx-=gameSpeed;
-
-		if (this.dx + this.distort < 0) {
-			this.distort = randomBetween(50,150);
-			this.dx = canvas.width;
-		};
-
+		
 		return this;
 	}
 
 	this.draw = function() {
-		context.beginPath();
-
-		context.moveTo(this.l1x1, this.l1y1);
-		context.lineTo(this.l1x2, this.l1y2);
-		context.strokeStyle = "rgba(255,255,255,0.5)";
-		context.stroke();
-
-		context.moveTo(this.l2x1, this.l2y1);
-
-		context.lineTo(this.dx, this.l2y1);
-		context.lineTo(this.dx, this.l2y1 - this.distort);
-		context.lineTo(this.dx + this.distort, this.l2y1 - this.distort);
-		context.lineTo(this.dx + this.distort, this.l2y1);
-
-		context.lineTo(this.l2x2, this.l2y2);
-		context.strokeStyle = "rgba(255,255,255,0.5)";
-		context.stroke();
 
 		return this;
 	}
