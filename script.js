@@ -40,7 +40,10 @@ function generatePoints() {
 }
 
 function drawLines(){
-
+	context.beginPath();
+	context.moveTo(0,50);
+	context.lineTo(canvas.width,50);
+	context.stroke();
 }
 
 function randomBetween(min, max) {
