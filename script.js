@@ -73,6 +73,9 @@ function world() {
 	// for (var i = 0; i < points.length; i++) {
 	// 	points[i].update().draw();
 	// }
+	for (var i = 0; i < points.length; i++) {
+		points[i].draw();
+	}
 }
 
 function Point(x,y) {
