@@ -51,6 +51,10 @@ function drawLines(){
 	context.stroke();
 }
 
+function drawTitle() {
+	
+}
+
 function randomBetween(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -67,7 +71,7 @@ function world() {
 		character.update();
 	}
 	if (!start) {
-
+		drawTitle();
 	};
 	character.draw();
 	// for (var i = 0; i < points.length; i++) {
