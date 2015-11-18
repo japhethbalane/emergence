@@ -9,10 +9,9 @@ setInterval(world, 30);
 var character = new Character();
 var score = 0;
 var points = [];
-var intervalx = canvas.width/75;
-var intervaly = intervalx;
+
 var start = false;
-var gameSpeed = 20;
+var gameSpeed = 10;
 
 generatePoints();
 
@@ -32,6 +31,8 @@ var mousePress = function(event) {
 canvas.addEventListener("click", mousePress);
 
 function generatePoints() {
+	var intervalx = 20;
+	var intervaly = intervalx;
 	for (var i = 0; i <= canvas.height; i += intervaly) {
 		for (var j = 0; j <= canvas.width; j+= intervalx) {
 			points.push(new Point(j,i));
@@ -40,6 +41,8 @@ function generatePoints() {
 }
 
 function drawLines(){
+	context.strokeStyle = "#fff";
+
 	context.beginPath();
 	context.moveTo(0,50);
 	context.lineTo(canvas.width,50);
@@ -66,19 +69,16 @@ function clearCanvas() {
 
 function world() {
 	clearCanvas();
-	drawLines();
 	if (start) {
+		drawLines();
 		character.update();
 	}
 	if (!start) {
 		drawTitle();
 	};
 	character.draw();
-	// for (var i = 0; i < points.length; i++) {
-	// 	points[i].update().draw();
-	// }
 	for (var i = 0; i < points.length; i++) {
-		points[i].draw();
+		points[i].update().draw();
 	}
 }
 
@@ -125,9 +125,11 @@ function Character() {
 	this.acceleration = 1.01;
 
 	this.update = function() {
-		if (this.x+this.radius < canvas.width && this.x-this.radius > 0) {
+		if (start) {
 			this.speed *= this.acceleration;
-			this.y += this.speed;
+			if (this.y+this.radius <= canvas.height-50 && this.y-this.radius >= 50) {
+				this.y += this.speed;
+			};
 
 			if (this.jump) {
 				if (this.speed > 0) {
@@ -147,9 +149,6 @@ function Character() {
 			};
 			this.jump = false;
 		};
-		if (this.x+this.radius >= canvas.width || this.x-this.radius <= 0) {
-			start = false;
-		};
 
 		return this;
 	}
@@ -157,20 +156,8 @@ function Character() {
 	this.draw = function() {
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-		context.strokeStyle = "rgba(255,255,255,0.15)";
+		context.strokeStyle = "#fff";
 		context.stroke();
-
-		context.beginPath();
-		context.arc(this.x, this.y, this.radius-5, Math.PI * 2, false);
-		context.strokeStyle = "rgba(255,255,255,0.5)";
-		context.stroke();
-
-		context.beginPath();
-		context.arc(this.x, this.y, this.radius-10, Math.PI * 2, false);
-		context.strokeStyle = "rgba(255,255,255,1)";
-		context.fillStyle = "rgba(255,255,255,0.5)";
-		context.stroke();
-		context.fill();
 
 		return this;
 	}
