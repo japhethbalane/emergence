@@ -14,7 +14,7 @@ var obstacles = [];
 var start = false;
 var gameSpeed = 20;
 
-generateObstacles(15);
+generateObstacles(5);
 generatePoints();
 
 var mousePress = function(event) {
@@ -130,9 +130,9 @@ function Point(x,y) {
 function Character() {
 	this.x = canvas.width/3;
 	this.y = canvas.height/2;
-	this.radius = 75;
+	this.radius = 45;
 	this.jump = false;
-	this.speed = 40;
+	this.speed = 50;
 	this.spd = this.speed;
 	this.acceleration = 1.01;
 
@@ -158,7 +158,7 @@ function Character() {
 					this.speed = -this.spd;
 				};
 			};
-			if (this.speed > -0.5 && this.speed < 0) {
+			if (this.speed > -1.0 && this.speed < 0) {
 				this.speed = 0;
 				this.acceleration = 1.01;
 			};
