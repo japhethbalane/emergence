@@ -10,6 +10,7 @@ var character = new Character();
 var score = 0;
 var points = [];
 var obstacles = [];
+var lines = [];
 
 var start = false;
 var gameSpeed = 20;
@@ -32,12 +33,6 @@ var mousePress = function(event) {
 }
 canvas.addEventListener("click", mousePress);
 
-function generateObstacles(count) {
-	for (var i = 0; i < count; i++) {
-		obstacles.push(new Obstacle());
-	}
-}
-
 function generatePoints() {
 	var intervalx = 20;
 	var intervaly = intervalx;
@@ -48,18 +43,10 @@ function generatePoints() {
 	}
 }
 
-function drawLines(){
-	context.strokeStyle = "#fff";
-
-	context.beginPath();
-	context.moveTo(0,50);
-	context.lineTo(canvas.width,50);
-	context.stroke();
-
-	context.beginPath();
-	context.moveTo(0,canvas.height-50);
-	context.lineTo(canvas.width,canvas.height-50);
-	context.stroke();
+function generateObstacles(count) {
+	for (var i = 0; i < count; i++) {
+		obstacles.push(new Obstacle());
+	}
 }
 
 function drawTitle() {
@@ -78,11 +65,10 @@ function clearCanvas() {
 function world() {
 	clearCanvas();
 	if (start) {
-		drawLines();
 		character.update();
-		for (var i = 0; i < obstacles.length; i++) {
-			obstacles[i].update().draw();
-		}
+		// for (var i = 0; i < obstacles.length; i++) {
+		// 	obstacles[i].update().draw();
+		// }
 	}
 	if (!start) {
 		drawTitle();
@@ -103,7 +89,7 @@ function Point(x,y) {
 		this.radius = 1;
 		if (Math.sqrt( Math.abs(this.x-gameSpeed-character.x)*Math.abs(this.x-character.x) + 
 					   Math.abs(this.y-character.y)*Math.abs(this.y-character.y)) < character.radius) {
-			this.radius = character.radius - Math.sqrt( 
+				this.radius = character.radius - Math.sqrt( 
 				Math.abs(this.x-gameSpeed-character.x)*Math.abs(this.x-character.x) + 
 				Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
 		};
@@ -209,4 +195,8 @@ function Obstacle() {
 
 		return this;
 	}
+}
+
+function Line(y) {
+	
 }
