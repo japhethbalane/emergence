@@ -30,15 +30,8 @@ window.addEventListener("keypress", function(e) {
 
 function generate() {
 	generateObstacles(5);
-	generatePoints(500);
 	generateLines();
 	character = new Character()
-}
-
-function generatePoints(count) {
-	for (var i = 0; i <= count; i++) {
-			points.push(new Point());
-	}
 }
 
 function generateObstacles(count) {
@@ -81,41 +74,6 @@ function world() {
 		drawTitle();
 	};
 	character.draw();
-	for (var i = 0; i < points.length; i++) {
-		points[i].update().draw();
-	}
-}
-
-function Point() {
-	this.x = randomBetween(0,canvas.width);
-	this.y = randomBetween(0,canvas.height);
-	this.radius = 1;
-	this.speed = gameSpeed;
-
-	this.update = function() {
-		// this.radius = 1;
-		// if (Math.sqrt( Math.abs(this.x-gameSpeed-character.x)*Math.abs(this.x-character.x) + 
-		// 			   Math.abs(this.y-character.y)*Math.abs(this.y-character.y)) < character.radius) {
-		// 		this.radius = character.radius - Math.sqrt( 
-		// 		Math.abs(this.x-gameSpeed-character.x)*Math.abs(this.x-character.x) + 
-		// 		Math.abs(this.y-character.y)*Math.abs(this.y-character.y));
-		// };
-		this.x-=this.speed;
-		if (this.x <= 0) {
-			this.x = canvas.width + ( 0 - this.x );
-		};
-
-		return this;
-	}
-
-	this.draw = function() {
-		context.beginPath();
-		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
-		context.fillStyle = "rgba(255,255,255,0.15)";
-		context.fill();
-
-		return this;
-	}
 }
 
 function Character() {
