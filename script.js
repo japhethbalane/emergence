@@ -8,7 +8,6 @@ setInterval(world, 30);
 
 var character;
 var score = 0;
-var points = [];
 var obstacles = [];
 var lines = [];
 
@@ -23,7 +22,9 @@ window.addEventListener("keypress", function(e) {
 			start = !start;
 		};
 		if (start) {
-
+			if (!character.isJumping) {
+				character.isJumping = true;
+			};
 		};
 	}
 });
@@ -82,7 +83,7 @@ function Character() {
 	this.radius = 45;
 
 	this.speed = 10;
-	this.acceleration = 1.49;
+	this.acceleration = 1.1;
 
 	this.isJumping = false;
 
@@ -99,7 +100,10 @@ function Character() {
 				this.y = lines[0].y + this.radius;
 			};
 
-			
+			if (this.isJumping) {
+
+			};
+
 		};
 
 		return this;
