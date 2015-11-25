@@ -64,9 +64,6 @@ function world() {
 	clearCanvas();
 	if (start) {
 		character.update();
-		// for (var i = 0; i < obstacles.length; i++) {
-		// 	obstacles[i].update().draw();
-		// }
 		for (var i = 0; i < lines.length; i++) {
 			lines[i].update().draw();
 		}
@@ -82,8 +79,8 @@ function Character() {
 	this.y = canvas.height/2;
 	this.radius = 45;
 
-	this.speed = 10;
-	this.acceleration = 1.1;
+	this.speed = 15;
+	this.acceleration = 1.0;
 
 	this.isJumping = false;
 
@@ -101,7 +98,8 @@ function Character() {
 			};
 
 			if (this.isJumping) {
-
+				this.isJumping = false;
+				this.speed *= -1;
 			};
 
 		};
