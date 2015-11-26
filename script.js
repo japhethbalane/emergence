@@ -22,8 +22,8 @@ window.addEventListener("keypress", function(e) {
 			start = !start;
 		};
 		if (start) {
-			if (!character.isJumping) {
-				character.isJumping = true;
+			if (!character.jump && !character.isJumping) {
+				character.jump = true;
 			};
 		};
 	}
@@ -72,6 +72,8 @@ function world() {
 		drawTitle();
 	};
 	character.draw();
+	// console.log(character.isJumping);
+	// console.log(character.speed);
 }
 
 function Character() {
@@ -80,15 +82,34 @@ function Character() {
 	this.radius = 45;
 
 	this.speed = 15;
-	this.acceleration = 1.0;
+	this.acceleration = 1.15;
 
+	this.jump = false;
 	this.isJumping = false;
 
 	this.update = function() {
 		if (start) {
+			if (this.jump) {
+				this.isJumping = true;
+				this.acceleration = 0.85;
+				this.speed *= -1;
+				this.jump = false;
+			};
+
+			if (this.isJumping) {
+				if (this.speed >= -0.75) {
+					this.speed *= -1;
+					this.acceleration = 1.15;
+					this.isJumping = false;
+				};
+			};
+
 			if (this.y+this.radius <= lines[1].y && this.y-this.radius >= lines[0].y) {
 				this.y += this.speed;
 				this.speed *= this.acceleration;
+				if (this.speed > 15) {
+					character.speed = 15;
+				};
 			};
 			if (this.y+this.radius > lines[1].y) {
 				this.y = lines[1].y - this.radius;
@@ -97,10 +118,6 @@ function Character() {
 				this.y = lines[0].y + this.radius;
 			};
 
-			if (this.isJumping) {
-				this.isJumping = false;
-				this.speed *= -1;
-			};
 
 		};
 
