@@ -81,44 +81,42 @@ function Character() {
 	this.y = canvas.height/2;
 	this.radius = 45;
 
-	this.speed = 15;
-	this.acceleration = 1.15;
+	this.speed = 25;
+	this.acceleration = 1.25;
 
 	this.jump = false;
 	this.isJumping = false;
 
 	this.update = function() {
 		if (start) {
-			if (this.jump) {
-				this.isJumping = true;
-				this.acceleration = 0.85;
-				this.speed *= -1;
-				this.jump = false;
-			};
+			// if (this.jump) {
+			// 	this.isJumping = true;
+			// 	this.acceleration = 0.75;
+			// 	this.speed *= -1;
+			// 	this.jump = false;
+			// };
 
-			if (this.isJumping) {
-				if (this.speed >= -0.75) {
-					this.speed *= -1;
-					this.acceleration = 1.15;
-					this.isJumping = false;
-				};
-			};
+			// if (this.isJumping) {
+			// 	if (this.speed >= -0.75) {
+			// 		this.speed *= -1;
+			// 		this.acceleration = 1.15;
+			// 		this.isJumping = false;
+			// 	};
+			// };
 
-			if (this.y+this.radius <= lines[1].y && this.y-this.radius >= lines[0].y) {
-				this.y += this.speed;
-				this.speed *= this.acceleration;
-				if (this.speed > 15) {
-					character.speed = 15;
-				};
-			};
-			if (this.y+this.radius > lines[1].y) {
-				this.y = lines[1].y - this.radius;
-			};
-			if (this.y-this.radius < lines[0].y) {
-				this.y = lines[0].y + this.radius;
-			};
-
-
+			// if (this.y+this.radius <= lines[1].y && this.y-this.radius >= lines[0].y) {
+			// 	this.y += this.speed;
+			// 	this.speed *= this.acceleration;
+			// 	if (this.speed > 25) {
+			// 		character.speed = 25;
+			// 	};
+			// };
+			// if (this.y+this.radius > lines[1].y) {
+			// 	this.y = lines[1].y - this.radius;
+			// };
+			// if (this.y-this.radius < lines[0].y) {
+			// 	this.y = lines[0].y + this.radius;
+			// };
 		};
 
 		return this;
