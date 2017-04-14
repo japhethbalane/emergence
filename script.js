@@ -1,184 +1,226 @@
+
+/////////////////////////////////////////////////////////
+
 var canvas = document.getElementById('sphere');
 var context = canvas.getContext('2d');
-
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
 setInterval(world, 30);
+var character, gun, bullets, enemies, dirs;
 
-var character;
-var score = 0;
-var obstacles = [];
-var lines = [];
+/////////////////////////////////////////////////////////
 
-var start = false;
-var gameSpeed = 5;
-
-generate();
-
-window.addEventListener("keypress", function(e) {
-	if (e.keyCode == 32) {
-		if (!start) {
-			start = !start;
-		};
-		if (start) {
-			if (!character.jump && !character.isJumping) {
-				character.jump = true;
-			};
-		};
+function init() {
+	canvas.height = window.innerHeight;
+	canvas.width = window.innerWidth;
+	character = new Character();
+	gun = new Gun();
+	bullets = [];
+	enemies = [];
+	dirs = [0,0,0,0];
+	for (var i = 0; i < 100; i++) {
+		enemies.push(new Enemy());
 	}
-});
-
-function generate() {
-	generateObstacles(5);
-	generateLines();
-	character = new Character()
-}
-
-function generateObstacles(count) {
-	for (var i = 0; i < count; i++) {
-		obstacles.push(new Obstacle());
-	}
-}
-
-function generateLines() {
-	var interval = 50;
-	lines.push(new Line(interval));
-	lines.push(new Line(canvas.height - interval));
-}
-
-function drawTitle() {
-	
-}
+}; init();
 
 function randomBetween(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
-
 function clearCanvas() {
-	context.fillStyle = "#001634";
+	context.fillStyle = "#666";
 	context.fillRect(0,0,canvas.width,canvas.height);
 }
+function getHypothenuse(x1,y1,x2,y2) {
+	var x = Math.abs(x1-x2);
+	var y = Math.abs(y1-y2);
+	return Math.sqrt((x*x)+(y*y));
+}
+
+/////////////////////////////////////////////////////////
 
 function world() {
 	clearCanvas();
-	if (start) {
-		character.update();
-		for (var i = 0; i < lines.length; i++) {
-			lines[i].update().draw();
-		}
+
+	character.update().draw();
+	gun.draw();
+	for (var i = 0; i < enemies.length; i++) {
+		enemies[i].update().draw();	
 	}
-	if (!start) {
-		drawTitle();
-	};
-	character.draw();
-	// console.log(character.isJumping);
-	// console.log(character.speed);
 }
+
+/////////////////////////////////////////////////////////
 
 function Character() {
-	this.x = canvas.width/3;
 	this.y = canvas.height/2;
-	this.radius = 45;
-
-	this.speed = 25;
-	this.acceleration = 1.25;
-
-	this.jump = false;
-	this.isJumping = false;
-
+	this.x = canvas.width/2;
+	this.radius = 20;
+	this.speed = 5;
+	var eyes = [
+		[-10,-5,10,-5,6,6],
+		[-10, 5,10, 5,6,6],
+		[-13,0 ,7 ,0 ,5,7],
+		[-7 ,0 ,13,0 ,7,5],
+		[-10,0 ,10,0 ,6,6]
+	];
 	this.update = function() {
-		if (start) {
-			// if (this.jump) {
-			// 	this.isJumping = true;
-			// 	this.acceleration = 0.75;
-			// 	this.speed *= -1;
-			// 	this.jump = false;
-			// };
-
-			// if (this.isJumping) {
-			// 	if (this.speed >= -0.75) {
-			// 		this.speed *= -1;
-			// 		this.acceleration = 1.15;
-			// 		this.isJumping = false;
-			// 	};
-			// };
-
-			// if (this.y+this.radius <= lines[1].y && this.y-this.radius >= lines[0].y) {
-			// 	this.y += this.speed;
-			// 	this.speed *= this.acceleration;
-			// 	if (this.speed > 25) {
-			// 		character.speed = 25;
-			// 	};
-			// };
-			// if (this.y+this.radius > lines[1].y) {
-			// 	this.y = lines[1].y - this.radius;
-			// };
-			// if (this.y-this.radius < lines[0].y) {
-			// 	this.y = lines[0].y + this.radius;
-			// };
-		};
+		for (var en of enemies) {
+			en.y += dirs[0] * this.speed;
+			en.y -= dirs[1] * this.speed;
+			en.x += dirs[2] * this.speed;
+			en.x -= dirs[3] * this.speed;
+		}
 
 		return this;
 	}
-
 	this.draw = function() {
+		context.fillStyle = '#fff';
+		context.strokeStyle = '#000';
 		context.beginPath();
-		context.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-		context.strokeStyle = "rgba(255,255,255,0.45)";
-		context.fillStyle = "rgba(255,255,255,0.15)";
+		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
+		context.stroke(); context.fill();
+		context.fillStyle = 'grey';
+		var eyesPos = dirs.indexOf(1) != -1 ? eyes[dirs.indexOf(1)] : eyes[4];
+		context.beginPath();
+		context.arc(this.x + eyesPos[0], this.y + eyesPos[1], eyesPos[4], Math.PI*2, false);
+		context.stroke(); context.fill();
+		context.beginPath();
+		context.arc(this.x + eyesPos[2], this.y + eyesPos[3], eyesPos[5], Math.PI*2, false);
+		context.stroke(); context.fill();
+	}
+}
+function Gun() {
+	this.init = function() {
+		this.radius = 5;
+		this.dist = 28;
+		this.angle = randomBetween(0,360);
+	}; this.init();
+	this.draw = function() {
+		this.x = canvas.width/2 + Math.cos(this.angle * (Math.PI / 180)) * this.dist;
+		this.y = canvas.height/2 + Math.sin(this.angle * (Math.PI / 180)) * this.dist;
+		context.fillStyle = '#fff';
+		context.strokeStyle = '#000';
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
 		context.stroke();
 		context.fill();
-
-		return this;
-	}
+	};
 }
 
-function Obstacle() {
-	this.x = randomBetween(canvas.width, canvas.width*2);
+function Bullet(){
+	this.x = randomBetween(0, canvas.width);
 	this.y = randomBetween(0, canvas.height);
-	this.dim = randomBetween(100, 200);
-
-	this.update = function() {
-		this.x-=gameSpeed;
-		if (this.x + this.dim < 0) {
-			this.x = canvas.width;
-		};
-		
-		return this;
-	}
-
-	this.draw = function() {
-		context.beginPath();
-		context.moveTo(this.x, this.y);
-		context.lineTo(this.x, this.y+this.dim);
-		context.lineTo(this.x+this.dim, this.y+this.dim);
-		context.lineTo(this.x+this.dim, this.y);
-		context.lineTo(this.x, this.y);
-		context.strokeStyle = "#fff";
-		context.stroke();
-
-		return this;
-	}
-}
-
-function Line(y) {
-	this.y = y;
-	this.x1 = 0;
-	this.x2 = canvas.width;
-
+	this.radius = 5;
 	this.update = function() {
 
 		return this;
 	}
-
 	this.draw = function() {
+		context.fillStyle = '#fff'
+		context.strokeStyle = '#000';
 		context.beginPath();
-		context.moveTo(this.x1, this.y);
-		context.lineTo(this.x2, this.y);
-		context.strokeStyle = "rgba(255,255,255,0.15)";
+		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
 		context.stroke();
+		context.fill();
+	}
+}
+
+function Enemy(){
+	this.init = function() {
+		this.x = randomBetween(0, canvas.width);
+		this.y = randomBetween(0, canvas.height);
+		if (randomBetween(0,2) == 0) {
+			this.y = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.height + this.radius;
+		} else {
+			this.x = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.width + this.radius
+		}
+		this.radius = randomBetween(15,25);
+		this.angle = randomBetween(0,360);
+		this.minAng = this.angle - randomBetween(0, 180);
+		this.maxAng = this.angle + randomBetween(0, 180);
+		this.angSpd = 1;
+		this.angDir = randomBetween(0,2) == 0 ? -1 : 1;
+		this.speed = 1;
+		this.acceleration = 1.00;
+	}; this.init();
+	this.update = function() {
+		this.angle += this.angSpd * this.angDir;
+		if (this.angle >= this.maxAng || this.angle <= this.minAng) {
+			this.angDir *= -1;
+		}
+		this.speed *= this.acceleration;
+		var dx = Math.cos(this.angle * (Math.PI / 180)) * this.speed;
+        var dy = Math.sin(this.angle * (Math.PI / 180)) * this.speed;
+        this.x += dx;
+        this.y += dy;
+
+		if (this.y < 0 - this.radius*2 ||
+			this.y > canvas.height + this.radius*2 ||
+			this.x < 0 - this.radius*2 ||
+			this.x > canvas.width + this.radius*2 ) {
+			this.init();
+		}
 
 		return this;
 	}
+	this.draw = function() {
+		context.fillStyle = '#fff';
+		context.strokeStyle = '#000';
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
+		context.stroke();
+		context.fill();
+		context.fillStyle = '#000';
+		context.beginPath();
+		context.arc(this.x + this.radius/2, this.y, 5, Math.PI*2, false);
+		context.stroke();
+		context.fill();
+		context.beginPath();
+		context.arc(this.x - this.radius/2, this.y, 5, Math.PI*2, false);
+		context.stroke();
+		context.fill();
+	}
 }
+
+/////////////////////////////////////////////////////////
+
+window.addEventListener('resize', init);
+
+// [up, down, left, right]
+window.addEventListener("keypress", function(e) {
+	console.log(e.keyCode);
+    if (e.keyCode == 119) {
+    	dirs = [0,0,0,0];
+    	dirs[0] = 1;
+    	dirs[1] = 0;
+    }
+    else if (e.keyCode == 115) {
+    	dirs = [0,0,0,0];
+    	dirs[0] = 0;
+    	dirs[1] = 1;
+    }
+    else if (e.keyCode == 97)  {
+    	dirs = [0,0,0,0];
+    	dirs[2] = 1;
+    	dirs[3] = 0;
+    }
+    else if (e.keyCode == 100) {
+    	dirs = [0,0,0,0];
+    	dirs[2] = 0;
+    	dirs[3] = 1;
+    }
+    else if (e.keyCode == 32) {
+    	dirs = [0,0,0,0];
+    }
+});
+
+window.addEventListener("mousemove", function(e) {
+	var diffx = canvas.width/2 - e.pageX;
+	var diffy = canvas.height/2 - e.pageY;
+	gun.angle = -1 * (Math.atan2(diffx, diffy) * (180 / Math.PI) + 90);
+});
+
+/////////////////////////////////////////////////////////
+
+
+
+
+
+
