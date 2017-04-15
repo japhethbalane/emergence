@@ -4,7 +4,7 @@
 var canvas = document.getElementById('sphere');
 var context = canvas.getContext('2d');
 setInterval(world, 30);
-var character, gun, bullets, enemies, dirs;
+var character, gun, bullets, enemies, dirs, isFire;
 
 /////////////////////////////////////////////////////////
 
@@ -19,6 +19,7 @@ function init() {
 	for (var i = 0; i < 100; i++) {
 		enemies.push(new Enemy());
 	}
+	isFire = false;
 }; init();
 
 function randomBetween(min, max) {
@@ -44,6 +45,14 @@ function world() {
 	for (var i = 0; i < enemies.length; i++) {
 		enemies[i].update().draw();	
 	}
+
+	if (isFire && character.bulletCount > 0) {
+		bullets.push(new Bullet(gun.angle));
+		character.bulletCount--;
+	}
+	for (var i = 0; i < bullets.length; i++) {
+		bullets[i].update().draw();	
+	}
 }
 
 /////////////////////////////////////////////////////////
@@ -53,6 +62,10 @@ function Character() {
 	this.x = canvas.width/2;
 	this.radius = 20;
 	this.speed = 5;
+	this.bulletCount = 10;
+	this.bulletRegen = 5;
+	this.bulletRegenCtr = 0;
+	this.bulletMax = 50;
 	var eyes = [
 		[-10,-5,10,-5,6,6],
 		[-10, 5,10, 5,6,6],
@@ -68,6 +81,12 @@ function Character() {
 			en.x -= dirs[3] * this.speed;
 		}
 
+		this.bulletRegenCtr += this.bulletCount < this.bulletMax ? 1 : 0;
+		if (this.bulletRegenCtr >= this.bulletRegen) {
+			this.bulletRegenCtr = 0;
+			this.bulletCount++;
+		}
+
 		return this;
 	}
 	this.draw = function() {
@@ -76,7 +95,7 @@ function Character() {
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
 		context.stroke(); context.fill();
-		context.fillStyle = 'grey';
+		context.fillStyle = 'white';
 		var eyesPos = dirs.indexOf(1) != -1 ? eyes[dirs.indexOf(1)] : eyes[4];
 		context.beginPath();
 		context.arc(this.x + eyesPos[0], this.y + eyesPos[1], eyesPos[4], Math.PI*2, false);
@@ -104,11 +123,27 @@ function Gun() {
 	};
 }
 
-function Bullet(){
-	this.x = randomBetween(0, canvas.width);
-	this.y = randomBetween(0, canvas.height);
+function Bullet(ang){
+	this.x = character.x;
+	this.y = character.y;
 	this.radius = 5;
+	this.angle = ang;
+	this.speed = 30;
+	this.acceleration = 1;
 	this.update = function() {
+		this.speed *= this.acceleration;
+
+		var dx = Math.cos(this.angle * (Math.PI / 180)) * this.speed;
+        var dy = Math.sin(this.angle * (Math.PI / 180)) * this.speed;
+        this.x += dx;
+        this.y += dy;
+
+        if (this.x + this.radius < 0 ||
+        	this.x - this.radius > canvas.width || 
+        	this.y + this.radius < 0 ||
+        	this.y - this.radius > canvas.height) {
+        	bullets.splice(bullets.indexOf(this), 1);
+        }
 
 		return this;
 	}
@@ -126,18 +161,20 @@ function Enemy(){
 	this.init = function() {
 		this.x = randomBetween(0, canvas.width);
 		this.y = randomBetween(0, canvas.height);
+		this.radius = randomBetween(15,25);
 		if (randomBetween(0,2) == 0) {
 			this.y = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.height + this.radius;
 		} else {
 			this.x = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.width + this.radius
 		}
-		this.radius = randomBetween(15,25);
-		this.angle = randomBetween(0,360);
-		this.minAng = this.angle - randomBetween(0, 180);
-		this.maxAng = this.angle + randomBetween(0, 180);
+		this.angle = randomBetween(0,4) == 1 ? 
+			-1 * (Math.atan2(this.x - canvas.width/2, this.y - canvas.height/2) * (180 / Math.PI) + 90) : 
+			randomBetween(0,360);
+		this.minAng = this.angle - randomBetween(0, 0);
+		this.maxAng = this.angle + randomBetween(0, 0);
 		this.angSpd = 1;
 		this.angDir = randomBetween(0,2) == 0 ? -1 : 1;
-		this.speed = 1;
+		this.speed = 2;
 		this.acceleration = 1.00;
 	}; this.init();
 	this.update = function() {
@@ -169,11 +206,11 @@ function Enemy(){
 		context.fill();
 		context.fillStyle = '#000';
 		context.beginPath();
-		context.arc(this.x + this.radius/2, this.y, 5, Math.PI*2, false);
+		context.arc(this.x + this.radius/2, this.y, this.radius/2.5, Math.PI*2, false);
 		context.stroke();
 		context.fill();
 		context.beginPath();
-		context.arc(this.x - this.radius/2, this.y, 5, Math.PI*2, false);
+		context.arc(this.x - this.radius/2, this.y, this.radius/2.5, Math.PI*2, false);
 		context.stroke();
 		context.fill();
 	}
@@ -185,7 +222,7 @@ window.addEventListener('resize', init);
 
 // [up, down, left, right]
 window.addEventListener("keypress", function(e) {
-	console.log(e.keyCode);
+	// console.log(e.keyCode);
     if (e.keyCode == 119) {
     	dirs = [0,0,0,0];
     	dirs[0] = 1;
@@ -215,6 +252,14 @@ window.addEventListener("mousemove", function(e) {
 	var diffx = canvas.width/2 - e.pageX;
 	var diffy = canvas.height/2 - e.pageY;
 	gun.angle = -1 * (Math.atan2(diffx, diffy) * (180 / Math.PI) + 90);
+});
+
+window.addEventListener('mousedown', function() {
+	isFire = true;
+});
+
+window.addEventListener('mouseup', function() {
+	isFire = false;
 });
 
 /////////////////////////////////////////////////////////
