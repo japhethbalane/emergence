@@ -16,7 +16,7 @@ function init() {
 	bullets = [];
 	enemies = [];
 	dirs = [0,0,0,0];
-	for (var i = 0; i < 20; i++) {
+	for (var i = 0; i < 5; i++) {
 		enemies.push(new Enemy());
 	}
 	isFire = false;
@@ -35,6 +35,24 @@ function getHypothenuse(x1,y1,x2,y2) {
 	var y = Math.abs(y1-y2);
 	return Math.sqrt((x*x)+(y*y));
 }
+function connectBullets() {
+	for (var i in bullets) {
+		for (var j = i; j < bullets.length; j++) {
+			if (j != i) {
+				var range = 300;
+				var b1 = bullets[i], b2 = bullets[j];
+				var hyp = getHypothenuse(b1.x, b1.y, b2.x, b2.y);
+				if (hyp <= range) {
+					context.strokeStyle = 'rgba(255,255,255,'+((Math.abs(hyp-range))*(1/range))+')';
+					context.beginPath();
+					context.moveTo(b1.x, b1.y);
+					context.lineTo(b2.x, b2.y);
+					context.stroke();
+				}
+			}
+		}
+	}
+}
 
 /////////////////////////////////////////////////////////
 
@@ -52,6 +70,8 @@ function world() {
 		bullets.push(new Bullet(gun.angle));
 		character.bulletCount--;
 	}
+
+	connectBullets();
 	for (var i = 0; i < bullets.length; i++) {
 		bullets[i].update().draw();	
 	}
@@ -130,7 +150,7 @@ function Gun() {
 function Bullet(ang) {
 	this.x = gun.x;
 	this.y = gun.y;
-	this.radius = gun.radius-2;
+	this.radius = gun.radius/20;
 	this.angle = ang;
 	this.speed = 10;
 	this.acceleration = 1;
@@ -153,9 +173,8 @@ function Bullet(ang) {
         	if (getHypothenuse(this.x, this.y, en.x, en.y) <=
         		this.radius + en.radius) {
         		bullets.splice(bullets.indexOf(this), 1);
-        		if (en.radius > character.radius) {
-        			en.radius -= 2;
-        		}
+        		en.life -= 3;
+        		en.radius -= 2;
         	}
         }
 
@@ -175,7 +194,7 @@ function Enemy() {
 	this.init = function() {
 		this.x = randomBetween(0, canvas.width);
 		this.y = randomBetween(0, canvas.height);
-		this.radius = 30;
+		this.radius = 10 + randomBetween(10,50);
 		if (randomBetween(0,2) == 0) {
 			this.y = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.height + this.radius;
 		} else {
@@ -190,10 +209,17 @@ function Enemy() {
 		this.angDir = randomBetween(0,2) == 0 ? -1 : 1;
 		this.speed = 3;
 		this.stability = 3;
+		this.life = this.radius/2;
 	}; this.init();
 	this.update = function() {
-		if (this.radius <= character.radius) {
+		if (this.life <= 0) {
 			this.stability = 0;
+			enemies.push(new Enemy());
+			this.init();
+		}
+		if (getHypothenuse(this.x, this.y, character.x, character.y) <= 
+			this.radius + character.radius) {
+			this.init();
 		}
 		this.angle += this.angSpd * this.angDir;
 		if (this.angle >= this.maxAng || this.angle <= this.minAng) {
@@ -228,11 +254,11 @@ function Enemy() {
 		context.beginPath();
 		context.arc(this.x + this.radius/2 + randomBetween(-this.stability, this.stability + 1), this.y + randomBetween(-this.stability, this.stability + 1), this.radius/2.5, Math.PI*2, false);
 		context.stroke();
-		context.fill();
+		// context.fill();
 		context.beginPath();
 		context.arc(this.x - this.radius/2 + randomBetween(-this.stability, this.stability + 1), this.y + randomBetween(-this.stability, this.stability + 1), this.radius/2.5, Math.PI*2, false);
 		context.stroke();
-		context.fill();
+		// context.fill();
 	}
 }
 
