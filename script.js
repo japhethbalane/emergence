@@ -4,7 +4,9 @@
 var canvas = document.getElementById('sphere');
 var context = canvas.getContext('2d');
 setInterval(world, 30);
-var character, gun, bullets, enemies, dirs, isFire, grid;
+var isPlay = true;
+var character, gun, bullets, enemies, dirs, isFire, grid, bar, toPaintCtr, toPaint;
+var range;
 
 /////////////////////////////////////////////////////////
 
@@ -21,13 +23,18 @@ function init() {
 	}
 	isFire = false;
 	grid = new Grid();
+	bar = new Bar();
+	toPaint = 2;
+	toPaintCtr = toPaint;
+	range = 200;
 }; init();
 
 function randomBetween(min, max) {
+	if (min > max) {var temp = min; min = max; max = temp; }
     return Math.floor(Math.random() * (max - min)) + min;
 }
 function clearCanvas() {
-	context.fillStyle = "#666";
+	context.fillStyle = "#fff";
 	context.fillRect(0,0,canvas.width,canvas.height);
 }
 function getHypothenuse(x1,y1,x2,y2) {
@@ -39,11 +46,12 @@ function connectBullets() {
 	for (var i in bullets) {
 		for (var j = i; j < bullets.length; j++) {
 			if (j != i) {
-				var range = 300;
 				var b1 = bullets[i], b2 = bullets[j];
 				var hyp = getHypothenuse(b1.x, b1.y, b2.x, b2.y);
 				if (hyp <= range) {
-					context.strokeStyle = 'rgba(255,255,255,'+((Math.abs(hyp-range))*(1/range))+')';
+					context.strokeStyle =
+					'rgba('+b2.r+','+b2.g+','+b2.b+','
+					+((Math.abs(hyp-range))*(3/range))+')';
 					context.beginPath();
 					context.moveTo(b1.x, b1.y);
 					context.lineTo(b2.x, b2.y);
@@ -53,11 +61,23 @@ function connectBullets() {
 		}
 	}
 }
-
+function hit(en,r,g,b) {
+	en.life -= 3;
+	en.colorize(r, g, b);
+}
+function texts() {
+	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
+	context.font = '15px Arial';
+	context.fillText('HP : ' + bar.life, 20, 70);
+	context.fillText('bunus HP : ' + toPaint, 20, 90);
+	context.fillText('get bonus in : ' + toPaintCtr, 20, 110);
+	context.fillText('keep calm and paint dem circles ;)', 20, canvas.height - 20);
+}
 /////////////////////////////////////////////////////////
 
 function world() {
 	clearCanvas();
+	console.log(toPaint, toPaintCtr, isPlay);
 
 	grid.update().draw();
 	character.update().draw();
@@ -75,6 +95,9 @@ function world() {
 	for (var i = 0; i < bullets.length; i++) {
 		bullets[i].update().draw();	
 	}
+
+	bar.update().draw();
+	texts();
 }
 
 /////////////////////////////////////////////////////////
@@ -85,7 +108,7 @@ function Character() {
 	this.radius = 20;
 	this.speed = 5;
 	this.bulletCount = 10;
-	this.bulletRegen = 2;
+	this.bulletRegen = 0;
 	this.bulletRegenCtr = 0;
 	this.bulletMax = 50;
 	var eyes = [
@@ -95,12 +118,34 @@ function Character() {
 		[-7 ,0 ,13,0 ,7,5],
 		[-10,0 ,10,0 ,6,6]
 	];
+	var max = 255;
+	var min = 0;
+	this.r = randomBetween(min,max);
+	this.g = randomBetween(min,max);
+	this.b = randomBetween(min,max);
+	this.colorDir = [1,1,1];
 	this.update = function() {
 		for (var en of enemies) {
 			en.y += dirs[0] * this.speed;
 			en.y -= dirs[1] * this.speed;
 			en.x += dirs[2] * this.speed;
 			en.x -= dirs[3] * this.speed;
+		}
+
+		this.r += randomBetween(0,3*this.colorDir[0]);
+		this.g += randomBetween(0,3*this.colorDir[1]);
+		this.b += randomBetween(0,3*this.colorDir[2]);
+		if ((this.r >= max || this.r <= min) ) {
+			this.colorDir[0] *= -1;
+			this.r = this.r >= max ? max : min;
+		}
+		if ((this.g >= max || this.g <= min) ) {
+			this.colorDir[1] *= -1;
+			this.g = this.g >= max ? max : min;
+		}
+		if ((this.b >= max || this.b <= min) ) {
+			this.colorDir[2] *= -1;
+			this.b = this.b >= max ? max : min;
 		}
 
 		this.bulletRegenCtr += this.bulletCount < this.bulletMax ? 1 : 0;
@@ -112,13 +157,13 @@ function Character() {
 		return this;
 	}
 	this.draw = function() {
-		context.fillStyle = '#fff';
+		context.fillStyle = '#eee';
 		context.strokeStyle = '#000';
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
-		// context.stroke();
+		context.stroke();
 		context.fill();
-		context.fillStyle = 'white';
+		context.fillStyle = 'rgb('+this.r+','+this.g+','+this.b+')'
 		var eyesPos = dirs.indexOf(1) != -1 ? eyes[dirs.indexOf(1)] : eyes[4];
 		context.beginPath();
 		context.arc(this.x + eyesPos[0], this.y + eyesPos[1], eyesPos[4], Math.PI*2, false);
@@ -139,21 +184,25 @@ function Gun() {
 	this.draw = function() {
 		this.x = canvas.width/2 + Math.cos(this.angle * (Math.PI / 180)) * this.dist;
 		this.y = canvas.height/2 + Math.sin(this.angle * (Math.PI / 180)) * this.dist;
-		context.fillStyle = '#fff';
+		// context.fillStyle = '#fff';
+		context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
 		context.strokeStyle = '#000';
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
-		// context.stroke();
+		context.stroke();
 		context.fill();
 	};
 }
 function Bullet(ang) {
 	this.x = gun.x;
 	this.y = gun.y;
-	this.radius = gun.radius/20;
+	this.radius = 5;
 	this.angle = ang;
 	this.speed = 10;
 	this.acceleration = 1;
+	this.r = character.r;
+	this.g = character.g;
+	this.b = character.b;
 	this.update = function() {
 		this.speed *= this.acceleration;
 
@@ -162,10 +211,10 @@ function Bullet(ang) {
         this.x += dx;
         this.y += dy;
 
-        if (this.x + this.radius < 0 ||
-        	this.x - this.radius > canvas.width || 
-        	this.y + this.radius < 0 ||
-        	this.y - this.radius > canvas.height) {
+        if (this.x + this.radius < 0 - range ||
+        	this.x - this.radius > canvas.width + range || 
+        	this.y + this.radius < 0 - range ||
+        	this.y - this.radius > canvas.height + range) {
         	bullets.splice(bullets.indexOf(this), 1);
         }
 
@@ -173,19 +222,18 @@ function Bullet(ang) {
         	if (getHypothenuse(this.x, this.y, en.x, en.y) <=
         		this.radius + en.radius) {
         		bullets.splice(bullets.indexOf(this), 1);
-        		en.life -= 3;
-        		en.radius -= 2;
+        		hit(en,this.r,this.g,this.b);
         	}
         }
 
 		return this;
 	}
 	this.draw = function() {
-		context.fillStyle = '#fff'
+		// context.fillStyle = 'rgb('+this.r%255+','+this.g%255+','+this.b%255+')';
+		context.fillStyle = 'rgba(255,255,255,0)';
 		context.strokeStyle = '#000';
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
-		// context.stroke();
 		context.fill();
 	}
 }
@@ -194,32 +242,49 @@ function Enemy() {
 	this.init = function() {
 		this.x = randomBetween(0, canvas.width);
 		this.y = randomBetween(0, canvas.height);
-		this.radius = 10 + randomBetween(10,50);
+		this.radius = randomBetween(0, 20) == 1 ?
+			randomBetween(100, 150) : randomBetween(20,25);
 		if (randomBetween(0,2) == 0) {
 			this.y = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.height + this.radius;
 		} else {
 			this.x = randomBetween(0,2) == 0 ? 0 - this.radius : canvas.width + this.radius
 		}
-		this.angle = randomBetween(0,4) == 1 ? 
-			-1 * (Math.atan2(this.x - canvas.width/2, this.y - canvas.height/2) * (180 / Math.PI) + 90) : 
-			randomBetween(0,360);
-		this.minAng = this.angle - randomBetween(0, 0);
-		this.maxAng = this.angle + randomBetween(0, 0);
+		// this.angle = randomBetween(0,4) == 1 ? 
+		// 	-1 * (Math.atan2(this.x - canvas.width/2, this.y - canvas.height/2) * (180 / Math.PI) + 90) : 
+		// 	randomBetween(0,360);
+		this.angle = randomBetween(0,360);
+		this.minAng = this.angle - randomBetween(0, 90);
+		this.maxAng = this.angle + randomBetween(0, 90);
 		this.angSpd = 1;
 		this.angDir = randomBetween(0,2) == 0 ? -1 : 1;
-		this.speed = 3;
-		this.stability = 3;
-		this.life = this.radius/2;
+		this.speed = randomBetween(2,8);
+		this.stability = randomBetween(0,0);
+		this.life = this.radius;
+		this.r = 255;
+		this.g = 255;
+		this.b = 255;
 	}; this.init();
+	this.colorize = function(r,g,b) {
+		this.r = r;
+		this.g = g;
+		this.b = b;
+	}
 	this.update = function() {
 		if (this.life <= 0) {
-			this.stability = 0;
 			enemies.push(new Enemy());
 			this.init();
+			toPaintCtr--;
+			if (toPaintCtr <= 0) {
+				bar.life += toPaint;
+				toPaint *= 2;
+				toPaintCtr = toPaint;
+			}
 		}
 		if (getHypothenuse(this.x, this.y, character.x, character.y) <= 
 			this.radius + character.radius) {
 			this.init();
+			// bar.life--;
+			bar.life -= this.radius/5;
 		}
 		this.angle += this.angSpd * this.angDir;
 		if (this.angle >= this.maxAng || this.angle <= this.minAng) {
@@ -244,26 +309,26 @@ function Enemy() {
 		return this;
 	}
 	this.draw = function() {
-		context.fillStyle = '#fff';
-		context.strokeStyle = '#000';
+		context.fillStyle = 'rgb('+this.r+','+this.g+','+this.b+')';
+		context.strokeStyle = 'rgba(0,0,0,0.3)';
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, Math.PI*2, false);
 		context.stroke();
 		context.fill();
-		context.fillStyle = this.radius <= character.radius ? '#fff' : '#000';
+		context.fillStyle = '#fff';
 		context.beginPath();
 		context.arc(this.x + this.radius/2 + randomBetween(-this.stability, this.stability + 1), this.y + randomBetween(-this.stability, this.stability + 1), this.radius/2.5, Math.PI*2, false);
 		context.stroke();
-		// context.fill();
+		context.fill();
 		context.beginPath();
 		context.arc(this.x - this.radius/2 + randomBetween(-this.stability, this.stability + 1), this.y + randomBetween(-this.stability, this.stability + 1), this.radius/2.5, Math.PI*2, false);
 		context.stroke();
-		// context.fill();
+		context.fill();
 	}
 }
 
 function Grid() {
-	this.gap = 145;
+	this.gap = 30;
 	this.horizontal = 0;
 	this.vertical = 0;
 	this.update = function() {
@@ -296,7 +361,7 @@ function Grid() {
 		return this;
 	}
 	this.draw = function() {
-		context.strokeStyle = 'rgba(255,255,255,0.5)';
+		context.strokeStyle = 'rgba(0,0,0,0.2)';
 		var g = this.vertical;
 		while (g < canvas.width) {
 			context.beginPath();
@@ -313,6 +378,35 @@ function Grid() {
 			context.stroke();
 			g += this.gap;
 		}
+	}
+}
+function Bar() {
+	this.life = 50;
+	this.maxLife = this.life * 2;
+	this.r = character.r;
+	this.g = character.g;
+	this.b = character.b;
+	this.update = function() {
+		this.r = character.r;
+		this.g = character.g;
+		this.b = character.b;
+
+		if (this.life < 0) {
+			this.life = 0;
+		}
+		if (this.life > this.maxLife) {
+			this.life = this.maxLife;
+		}
+		if (this.life == 0) {
+			isPlay = false;
+		}
+
+		return this;
+	}
+	this.draw = function() {
+		context.fillStyle = 'rgb('+this.r+','+this.g+','+this.b+')';
+		context.fillRect(canvas.width/2-(canvas.width/2*(this.life/this.maxLife)),25,
+			canvas.width*(this.life/this.maxLife),15);
 	}
 }
 
