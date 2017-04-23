@@ -4,9 +4,9 @@
 var canvas = document.getElementById('sphere');
 var context = canvas.getContext('2d');
 setInterval(world, 30);
-var isPlay = true;
+
 var character, gun, bullets, enemies, dirs, isFire, grid, bar, toPaintCtr, toPaint;
-var range;
+var isPlay,range, score, isGG;
 
 /////////////////////////////////////////////////////////
 
@@ -27,6 +27,9 @@ function init() {
 	toPaint = 2;
 	toPaintCtr = toPaint;
 	range = 200;
+	isPlay = false;
+	isGG = false;
+	score = 0;
 }; init();
 
 function randomBetween(min, max) {
@@ -43,12 +46,16 @@ function getHypothenuse(x1,y1,x2,y2) {
 	return Math.sqrt((x*x)+(y*y));
 }
 function connectBullets() {
+	context.shadowBlur = 0;
 	for (var i in bullets) {
 		for (var j = i; j < bullets.length; j++) {
 			if (j != i) {
 				var b1 = bullets[i], b2 = bullets[j];
 				var hyp = getHypothenuse(b1.x, b1.y, b2.x, b2.y);
 				if (hyp <= range) {
+					context.shadowColor = 
+					'rgba('+b2.r+','+b2.g+','+b2.b+','
+					+((Math.abs(hyp-range))*(3/range))+')';
 					context.strokeStyle =
 					'rgba('+b2.r+','+b2.g+','+b2.b+','
 					+((Math.abs(hyp-range))*(3/range))+')';
@@ -60,10 +67,12 @@ function connectBullets() {
 			}
 		}
 	}
+	context.shadowBlur = 0;
 }
 function hit(en,r,g,b) {
 	en.life -= 3;
 	en.colorize(r, g, b);
+	score += en.radius;
 }
 function texts() {
 	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
@@ -71,33 +80,69 @@ function texts() {
 	context.fillText('HP : ' + bar.life, 20, 70);
 	context.fillText('bunus HP : ' + toPaint, 20, 90);
 	context.fillText('get bonus in : ' + toPaintCtr, 20, 110);
+	context.fillText('SCORE : ' + score, 20, 130);
 	context.fillText('keep calm and paint dem circles ;)', 20, canvas.height - 20);
+}
+function drawTitle() {
+	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
+	context.font = '70px Arial';
+	context.fillText('PAINter', 20, canvas.height/2);
+	context.font = '30px Arial';
+	context.fillText('get ready to paint dem circles... :)', 20, canvas.height/2+40);
+	context.font = '15px Arial';
+	context.fillText('press the \"space key\" to continue...!', 20, canvas.height/2+70);
+	context.font = '10px Arial';
+	context.fillText('pro tip : WASD ang controls ;) try...', 20, canvas.height/2+110);
+	context.font = '10px Arial';
+	context.fillText('PS pro tip : CLICK ang pag-pew*pew* sa paint ;)', 20, canvas.height/2+130);
+}
+function drawGG() {
+	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
+	context.font = '30px Arial';
+	context.fillText('gg noob... don\'t ever play this game again...', 20, canvas.height/2);
+	context.font = '13px Arial';
+	context.fillText('don\'t press the \"space key\" to continue... NOoooooo!', 20, canvas.height/2+25);
+	context.font = '13px Arial';
+	context.fillText('PLEASE SHUTDOWN THIS DEVICE NOW!', 20, canvas.height/2+50);
 }
 /////////////////////////////////////////////////////////
 
 function world() {
 	clearCanvas();
-	console.log(toPaint, toPaintCtr, isPlay);
 
-	grid.update().draw();
-	character.update().draw();
-	gun.draw();
-	for (var i = 0; i < enemies.length; i++) {
-		enemies[i].update().draw();	
+	if (!isPlay) {
+		grid.draw();
+		character.update().draw();
+		gun.draw();
+		drawTitle();
 	}
-
-	if (isFire && character.bulletCount > 0) {
-		bullets.push(new Bullet(gun.angle));
-		character.bulletCount--;
+	else if (isGG) {
+		grid.draw();
+		character.update().draw();
+		gun.draw();
+		drawGG();
 	}
+	else {
+		grid.update().draw();
+		character.update().draw();
+		gun.draw();
+		for (var i = 0; i < enemies.length; i++) {
+			enemies[i].update().draw();	
+		}
 
-	connectBullets();
-	for (var i = 0; i < bullets.length; i++) {
-		bullets[i].update().draw();	
+		if (isFire && character.bulletCount > 0) {
+			bullets.push(new Bullet(gun.angle));
+			character.bulletCount--;
+		}
+
+		connectBullets();
+		for (var i = 0; i < bullets.length; i++) {
+			bullets[i].update().draw();	
+		}
+
+		bar.update().draw();
+		texts();
 	}
-
-	bar.update().draw();
-	texts();
 }
 
 /////////////////////////////////////////////////////////
@@ -398,7 +443,9 @@ function Bar() {
 			this.life = this.maxLife;
 		}
 		if (this.life == 0) {
-			isPlay = false;
+			// isPlay = false;
+			// init();
+			isGG = true;
 		}
 
 		return this;
@@ -439,6 +486,12 @@ window.addEventListener("keypress", function(e) {
     }
     else if (e.keyCode == 32) {
     	dirs = [0,0,0,0];
+    	if (!isPlay) {
+    		isPlay = true;
+    	}
+    	if (isGG) {
+    		init();
+    	}
     }
 });
 
