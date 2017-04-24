@@ -10,6 +10,8 @@ var isPlay,range, score, highscore, isGG, apsanHS;
 
 /////////////////////////////////////////////////////////
 
+// localStorage.setItem('hs', 0); // reset HS
+
 function init() {
 	canvas.height = window.innerHeight;
 	canvas.width = window.innerWidth;
@@ -86,8 +88,10 @@ function texts() {
 	context.fillText('HP : ' + bar.life, 20, 70);
 	context.fillText('bunus HP : ' + toPaint, 20, 90);
 	context.fillText('get bonus in : ' + toPaintCtr, 20, 110);
-	context.fillText('SCORE : ' + score, 20, 130);
 	context.fillText('keep calm and paint dem circles ;)', 20, canvas.height - 20);
+	context.font = '20px Arial';
+	context.fillText('BEST     :' + highscore + ' points', 20, 150);
+	context.fillText('SCORE : ' + score + ' points', 20, 180);
 }
 function drawTitle() {
 	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
@@ -108,12 +112,21 @@ function drawGG() {
 	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
 	context.font = '30px Arial';
 	context.fillText('you\'re score : ' + score + " XD", 20, canvas.height/2 - 30);
-	context.font = '30px Arial';
-	context.fillText('gg noob... don\'t ever play this game again...', 20, canvas.height/2);
-	context.font = '13px Arial';
-	context.fillText('don\'t press the \"space key\" to continue... NOoooooo!', 20, canvas.height/2+25);
-	context.font = '13px Arial';
-	context.fillText('PLEASE SHUTDOWN THIS DEVICE NOW!', 20, canvas.height/2+50);
+	if (highscore == score) {
+		context.font = '70px Arial';
+		context.fillText('CONGRATSz...', 20, canvas.height/2 + 50);
+		context.font = '13px Arial';
+		context.fillText('please press the \"space key\" to continue...', 20, canvas.height/2+75);
+	} else {
+		context.font = '30px Arial';
+		context.fillText('gg noob... don\'t ever play this game again...', 20, canvas.height/2);
+		context.font = '13px Arial';
+		context.fillText('don\'t press the \"space key\" to continue... NOoooooo!', 20, canvas.height/2+25);
+		context.font = '13px Arial';
+		context.fillText('PLEASE SHUTDOWN THIS DEVICE NOW!', 20, canvas.height/2+50);
+	}
+	context.font = '20px Arial';
+	context.fillText('best :' + highscore + ' points', 20, 30);
 }
 /////////////////////////////////////////////////////////
 
@@ -454,7 +467,10 @@ function Bar() {
 		}
 		if (this.life == 0) {
 			isGG = true;
-			localStorage.setItem('hs',(score > highscore) ? score : highscore);
+			if (score > highscore) {
+				highscore = score;
+			}
+			localStorage.setItem('hs',highscore);
 			apsanHS= true;
 		}
 
