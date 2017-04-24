@@ -6,7 +6,7 @@ var context = canvas.getContext('2d');
 setInterval(world, 30);
 
 var character, gun, bullets, enemies, dirs, isFire, grid, bar, toPaintCtr, toPaint;
-var isPlay,range, score, isGG;
+var isPlay,range, score, highscore, isGG, apsanHS;
 
 /////////////////////////////////////////////////////////
 
@@ -29,7 +29,13 @@ function init() {
 	range = 200;
 	isPlay = false;
 	isGG = false;
+	apsanHS = false;
 	score = 0;
+	highscore = JSON.parse(localStorage.getItem("hs"));
+	if (!highscore) {
+		localStorage.setItem('hs',0);
+		highscore = 0;
+	}
 }; init();
 
 function randomBetween(min, max) {
@@ -95,9 +101,13 @@ function drawTitle() {
 	context.fillText('pro tip : WASD ang controls ;) try...', 20, canvas.height/2+110);
 	context.font = '10px Arial';
 	context.fillText('PS pro tip : CLICK ang pag-pew*pew* sa paint ;)', 20, canvas.height/2+130);
+	context.font = '20px Arial';
+	context.fillText('best :' + highscore + ' points', 20, 30);
 }
 function drawGG() {
 	context.fillStyle = 'rgb('+character.r%255+','+character.g%255+','+character.b%255+')';
+	context.font = '30px Arial';
+	context.fillText('you\'re score : ' + score + " XD", 20, canvas.height/2 - 30);
 	context.font = '30px Arial';
 	context.fillText('gg noob... don\'t ever play this game again...', 20, canvas.height/2);
 	context.font = '13px Arial';
@@ -426,7 +436,7 @@ function Grid() {
 	}
 }
 function Bar() {
-	this.life = 50;
+	this.life = 1;
 	this.maxLife = this.life * 2;
 	this.r = character.r;
 	this.g = character.g;
@@ -443,9 +453,9 @@ function Bar() {
 			this.life = this.maxLife;
 		}
 		if (this.life == 0) {
-			// isPlay = false;
-			// init();
 			isGG = true;
+			localStorage.setItem('hs',(score > highscore) ? score : highscore);
+			apsanHS= true;
 		}
 
 		return this;
