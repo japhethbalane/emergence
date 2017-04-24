@@ -449,7 +449,7 @@ function Grid() {
 	}
 }
 function Bar() {
-	this.life = 1;
+	this.life = 50;
 	this.maxLife = this.life * 2;
 	this.r = character.r;
 	this.g = character.g;
